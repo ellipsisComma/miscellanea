@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-GB" dir="auto">
+<head>
+	<meta charset="UTF-8">
+
+	<title>CSV-JSON parser demo</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+	ul {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 1rem;
+		margin-inline: auto;
+		padding-inline-start: 0;
+		list-style-type: "";
+	}
+	textarea {
+		width: 100%;
+		display: block;
+		resize: none;
+		tab-size: 4ch;
+	}
+	#parser {
+		max-width: 80ch;
+		margin-inline: auto;
+	}
+	#heading-modifiers {
+		width: 100%;
+		& > li {
+			flex: 1;
+		}
+	}
+	</style>
+</head>
+
+
+
+<body>
+<form id="parser">
+	<h1><abbr>CSV</abbr>/<abbr>JSON</abbr> parser</h1>
+	<p>A basic demo of my <abbr>CSV</abbr>/<abbr>JSON</abbr> parser, which works with <abbr>RFC</abbr> 4180-compliant <abbr>CSV</abbr> (though it's forgiving with some errors, e.g. having less than the full number of columns on certain rows). It can go in both directions and has a few settings and modifiers for more flexibility&mdash;the one thing it can't do is tab-separated values (<abbr>TSV</abbr>), which use a different format.</p>
+	<p>The <abbr>JSON</abbr> should be an array of objects. Load and parse the simple <abbr>CSV</abbr> demo for an example.</p>
+	<p>Load the simple demo to add basic <abbr>CSV</abbr> with no escapes or unusual data values, or load the complex <abbr>CSV</abbr> for a more complete demo.</p>
+	<p>All <abbr>CSV</abbr> field entries are parsed to strings in the resulting JSON; downstream data-processing, e.g. converting to boolean or number, is outside the scope of this parser.</p>
+	<div id="fields">
+		<label for="csv-field">CSV</label>
+		<textarea id="csv-field" rows="8"></textarea><!--#csv-field end-->
+		<ul>
+			<li><button id="csv-to-json-button" type="button"><abbr>CSV</abbr> to <abbr>JSON</abbr></button></li>
+			<li><button id="json-to-csv-button" type="button"><abbr>JSON</abbr> to <abbr>CSV</abbr></button></li>
+		</ul>
+		<ul>
+			<li><button id="load-simple-demo-button" type="button">Load simple <abbr>CSV</abbr> demo</button></li>
+			<li><button id="load-complex-demo-button" type="button">Load complex <abbr>CSV</abbr> demo</button></li>
+		</ul>
+		<label for="json-field">JSON</label>
+		<textarea id="json-field" rows="8"></textarea><!--#json-field end-->
+	</div><!--#fields end-->
+	<h2>Settings</h2>
+	<h3>Parser settings</h3>
+	<p>The <strong>separator</strong> and <strong>escaper</strong> must each be one unique character and neither may be a newline, carriage return, right square bracket, or backslash.</p>
+	<p><strong>Included columns</strong> sets which columns should be kept when parsing in either direction. This should be one row of valid CSV. In the underlying script, this must be passed as an array of headings instead of as <abbr>CSV</abbr></p>
+	<ul id="conversion-settings">
+		<li><label for="csv-separator-input"><abbr>CSV</abbr> separator</label><input id="csv-separator-input" type="text" minlength="1" maxlength="1" value="," pattern="[^\n\r\]\\]"></li>
+		<li><label for="csv-separator-input"><abbr>CSV</abbr> escaper</label><input id="csv-escaper-input" type="text" minlength="1" maxlength="1" value="&quot;" pattern="[^\n\r\]\\]"></li>
+		<li>
+			<label for="included-columns-input">Included columns</label>
+			<textarea id="included-columns-input"></textarea><!--#included-columns-input end-->
+		</li>
+	</ul><!--#conversion-settings end-->
+	<h3>Heading modifications</h3>
+	<p>All heading modifications should be empty or consist of one row of valid <abbr>CSV</abbr>:</p>
+	<dl>
+		<dt>Added headings</dt>
+		<dd>Add headings to header-less <abbr>CSV</abbr> when parsing it to <abbr>JSON</abbr>.</dd>
+		<dt>Replacement headings</dt>
+		<dd>Replace <abbr>CSV</abbr> input's header row when parsing it to <abbr>JSON</abbr>.</dd>
+	</dl>
+	<p>In the underlying script, heading modifiers should be passed as arrays of headings instead of as <abbr>CSV</abbr> strings.</p>
+	<ul id="heading-modifiers">
+		<li>
+			<div>
+				<input id="add-headings-checkbox" type="checkbox">
+				<label for="add-headings-checkbox">Add headings to <abbr>CSV</abbr></label>
+			</div>
+			<br>
+			<div>
+				<label for="added-headings-input">Added headings</label>
+				<textarea id="added-headings-input"></textarea><!--#added-headings-input end-->
+			</div>
+		</li>
+		<li>
+			<div>
+				<input id="replace-headings-checkbox" type="checkbox">
+				<label for="replace-headings-checkbox">Replace headings in <abbr>CSV</abbr></label>
+			</div>
+			<br>
+			<div>
+				<label for="replacement-headings-input">Replacement headings</label>
+				<textarea id="replacement-headings-input"></textarea><!--#replacement-headings-input end-->
+			</div>
+		</li>
+	</ul><!--#heading-modifiers end-->
+</form><!--#parser end-->
+
+
+
+<script src="main.js"></script>
+<script>
+// page module: handles a collection of stable on-page element references
+const page = (() => {
+	const elements = {};
+	return {
+		"setElement": (key, query) => elements[key] ??= document.querySelector(query),
+		"getElement": (key) => elements[key],
+	};
+})();
+
+page.setElement(`csvField`, `#csv-field`);
+page.setElement(`jsonField`, `#json-field`);
+page.setElement(`CSVtoJSONbutton`, `#csv-to-json-button`);
+page.setElement(`JSONtoCSVbutton`, `#json-to-csv-button`);
+page.setElement(`simpleDemoButton`, `#load-simple-demo-button`);
+page.setElement(`complexDemoButton`, `#load-complex-demo-button`);
+page.setElement(`CSVSeparatorInput`, `#csv-separator-input`);
+page.setElement(`CSVEscaperInput`, `#csv-escaper-input`);
+page.setElement(`addHeadingsCheck`, `#add-headings-checkbox`);
+page.setElement(`addedHeadingsInput`, `#added-headings-input`);
+page.setElement(`replaceHeadingsCheck`, `#replace-headings-checkbox`);
+page.setElement(`replacementHeadingsInput`, `#replacement-headings-input`);
+page.setElement(`includedColumnsInput`, `#included-columns-input`);
+
+const parser = MakeCSVParser();
+
+// parser settings inputs
+page.getElement(`CSVSeparatorInput`).addEventListener(`change`, () => {
+	const input = page.getElement(`CSVSeparatorInput`);
+	if (input.value === parser.getEscaper()) input.value = parser.getSeparator();
+	else if (input.checkValidity()) parser.setSeparator(input.value);
+	else input.value = `,`;
+});
+page.getElement(`CSVEscaperInput`).addEventListener(`change`, () => {
+	const input = page.getElement(`CSVEscaperInput`);
+	if (input.value === parser.getSeparator()) input.value = parser.getEscaper();
+	else if (input.checkValidity()) parser.setEscaper(input.value);
+	else input.value = `"`;
+});
+page.getElement(`includedColumnsInput`).addEventListener(`change`, () => {
+	const headings = page.getElement(`includedColumnsInput`).value;
+	parser.setIncludedColumns(headings.trim().length > 0 ? parser.rowToJSON(headings) : []);
+});
+
+// parsing (and heading modifiers, if parsing CSV to JSON)
+page.getElement(`CSVtoJSONbutton`).addEventListener(`click`, () => {
+	const addedHeadings = page.getElement(`addedHeadingsInput`).value;
+	const replacementHeadings = page.getElement(`replacementHeadingsInput`).value;
+	let csv = page.getElement(`csvField`).value;
+	if (page.getElement(`addHeadingsCheck`).checked) csv = parser.addHeadings(csv, parser.rowToJSON(addedHeadings));
+	if (page.getElement(`replaceHeadingsCheck`).checked) csv = parser.replaceHeadings(csv, parser.rowToJSON(replacementHeadings));
+	page.getElement(`jsonField`).value = JSON.stringify(parser.tableToJSON(csv), null, `\t`);
+});
+page.getElement(`JSONtoCSVbutton`).addEventListener(`click`, () => {
+	page.getElement(`csvField`).value = parser.tableFromJSON(JSON.parse(page.getElement(`jsonField`).value))
+});
+
+// load demo CSVs (simple = no problemo, complex = many field values and escapes)
+page.getElement(`simpleDemoButton`).addEventListener(`click`, () => {
+	page.getElement(`csvField`).value = `a,b,c
+1,2,3
+4,5,6
+7,8,9`;
+});
+page.getElement(`complexDemoButton`).addEventListener(`click`, () => {
+	page.getElement(`csvField`).value = `a,"b","c""c","""",,"f,f","g
+g","","i,
+""
+i"
+1,2,3,4,5,6,7,8,9`;
+});
+/* note: complex demo DOES NOT parse the same forwards and backwards;
+heading 5 is an empty string and heading 8 is an escaped empty string, so 8 overwrites 5
+in any case, this shows that empty fields AND escaped empty fields are parsed correctly
+*/
+
+// reset all inputs on reload
+document.getElementById(`parser`).reset();
+</script>
+</body>
+</html>
