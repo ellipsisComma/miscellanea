@@ -138,14 +138,20 @@ const parser = MakeCSVParser();
 page.getElement(`CSVSeparatorInput`).addEventListener(`change`, () => {
 	const input = page.getElement(`CSVSeparatorInput`);
 	if (input.value === parser.getEscaper()) input.value = parser.getSeparator();
-	else if (input.checkValidity()) parser.setSeparator(input.value);
-	else input.value = `,`;
+	else if (input.value.length > 0 && input.checkValidity()) parser.setSeparator(input.value);
+	else {
+		input.value = `,`;
+		parser.setSeparator(`,`);
+	}
 });
 page.getElement(`CSVEscaperInput`).addEventListener(`change`, () => {
 	const input = page.getElement(`CSVEscaperInput`);
 	if (input.value === parser.getSeparator()) input.value = parser.getEscaper();
-	else if (input.checkValidity()) parser.setEscaper(input.value);
-	else input.value = `"`;
+	else if (input.value.length > 0 && input.checkValidity()) parser.setEscaper(input.value);
+	else {
+		input.value = `"`;
+		parser.setEscaper(`"`);
+	}
 });
 page.getElement(`includedColumnsInput`).addEventListener(`change`, () => {
 	const headings = page.getElement(`includedColumnsInput`).value;
