@@ -206,7 +206,7 @@ const MakeCSVParser = () => {
 		// get array of arrays (rows of fields)
 		const rows = parseCSVToRows(csv).map(CSVtoJSONrow);
 		const headings = rows.shift()
-		const usedHeadings = includedColumns.length > 0 ? includedColumns.map(heading => heading.toString()) : headings;
+		const usedHeadings = includedColumns.length > 0 ? includedColumns.map(String) : headings; // must m
 
 		// build an object version of each row using headings and row data
 		const output = [];
