@@ -100,6 +100,19 @@ const MakeCSVParser = () => {
 			$|[${ch.separator}]
 		)
 		`, `gm`);
+		/*
+			could remove the lookarounds in fieldRegex and just add `ch.separator` at the end,
+			then append `ch.separator` to the row string when matching it against fieldRegex,
+			but if you mistakenly don't append with `ch.separator`,
+			then you'll lose the last column of each row
+
+			(?:
+				(?<unescaped>${unescapedField})
+				|
+				[${ch.escaper}](?<escaped>${escapedField})[${ch.escaper}]
+			)
+			[${ch.separator}]
+		*/
 		escapeRegex = new RegExp(String.raw`[\n${ch.separator}${ch.escaper}]`);
 	}
 
