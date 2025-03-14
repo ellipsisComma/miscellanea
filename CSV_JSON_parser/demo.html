@@ -7,6 +7,11 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
+	body {
+		line-height: 1.5;
+		font-size: 1.2rem;
+		font-family: sans-serif;
+	}
 	ul {
 		display: flex;
 		flex-direction: row;
@@ -26,11 +31,11 @@
 		max-width: 80ch;
 		margin-inline: auto;
 	}
-	#heading-modifiers {
-		width: 100%;
-		& > li {
-			flex: 1;
-		}
+	input:not([type="checkbox"]) {
+		display: block;
+	}
+	dt {
+		font-weight: bold;
 	}
 	</style>
 </head>
@@ -55,13 +60,13 @@
 			<li><button id="load-simple-demo-button" type="button">Load simple <abbr>CSV</abbr> demo</button></li>
 			<li><button id="load-complex-demo-button" type="button">Load complex <abbr>CSV</abbr> demo</button></li>
 		</ul>
-		<label for="json-field">JSON</label>
+		<label for="json-field"><abbr>JSON</abbr></label>
 		<textarea id="json-field" rows="8"></textarea><!--#json-field end-->
 	</div><!--#fields end-->
 	<h2>Settings</h2>
 	<h3>Parser settings</h3>
 	<p>The <strong>separator</strong> and <strong>escaper</strong> must each be one unique character and neither may be a newline, carriage return, right square bracket, or backslash.</p>
-	<p><strong>Included columns</strong> sets which columns should be kept when parsing in either direction. This should be one row of valid CSV. In the underlying script, this must be passed as an array of headings instead of as <abbr>CSV</abbr></p>
+	<p><strong>Included columns</strong> sets which columns should be kept when parsing in either direction. This should be one row of valid <abbr>CSV</abbr>. In the underlying script, this must be passed as an array of headings instead of as <abbr>CSV</abbr></p>
 	<ul id="conversion-settings">
 		<li><label for="csv-separator-input"><abbr>CSV</abbr> separator</label><input id="csv-separator-input" type="text" minlength="1" maxlength="1" value="," pattern="[^\n\r\]\\]"></li>
 		<li><label for="csv-separator-input"><abbr>CSV</abbr> escaper</label><input id="csv-escaper-input" type="text" minlength="1" maxlength="1" value="&quot;" pattern="[^\n\r\]\\]"></li>
